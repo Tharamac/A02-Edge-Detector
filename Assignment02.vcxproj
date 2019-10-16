@@ -159,7 +159,7 @@
     <ClCompile Include="Assignment02.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\img_input.jpg" />
+    <Image Include="img_input.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assignment02.h" />

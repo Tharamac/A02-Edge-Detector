@@ -32,7 +32,7 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 
 int main()
 {
-	Mat image = imread("../img_input.jpg");
+	Mat image = imread("img_input.jpg");
 	Mat mask_out, image_hsv;
 	Mat channel[3];
 	Mat brownMask;
@@ -84,7 +84,7 @@ Left button of the mouse is clicked - position (937, 392)
 		rectangle(brownMask, cut_start[i], cut_finish[i], Scalar(0), CV_FILLED);
 	}
 	
-	imshow("7. Cut Shadow <Black>", brownMask); waitKey(0);
+	imshow("7. Cut Shadow <Black> from (6)", brownMask); waitKey(0);
 	
 	
 	//Combine two mask to a single mask
@@ -98,10 +98,10 @@ Left button of the mouse is clicked - position (937, 392)
 	for (int i = 0; i < white_start.size(); i++) {
 		rectangle(mergeMask, white_start[i], white_finish[i], Scalar(255), CV_FILLED);
 	}
-	imshow("10. Cut Shadow <White>", mergeMask); waitKey(0);
+	imshow("10. Cut Shadow <White> from (9)", mergeMask); waitKey(0);
 	
 	bitwise_xor(mergeMask, brownMask, mergeMask);
-	imshow("11. (9) xor (10)", mergeMask); waitKey(0);
+	imshow("11. (7) xor (10)", mergeMask); waitKey(0);
 	//close mask to remove line of tiles
 	
 	Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
@@ -118,7 +118,7 @@ Left button of the mouse is clicked - position (937, 392)
 	//blur(mergeMask,mask_out,Size(3,3));
 	//imshow("6. blurred", mask_out);
 	Canny(mergeMask, canny_output, 1, 3);
-	imshow("7. Canny edge detection", canny_output); waitKey(0);
+	imshow("13. Canny edge detection", canny_output); waitKey(0);
 
 	//contour
 	vector<vector<Point>> contours; // list of contour points
@@ -136,7 +136,7 @@ Left button of the mouse is clicked - position (937, 392)
 		drawContours(drawing, contours, (int)i, color, 2, LINE_8, hierarchy, 0);
 	}
 	// Wait until user press some key
-	imshow("Contours", drawing);
+	imshow("14. Contours", drawing);
 	waitKey(0);
 	image.release();
 
