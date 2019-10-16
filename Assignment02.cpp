@@ -12,6 +12,8 @@ Mat img;
 Scalar colour;
 int morph_elem = 1;
 int morph_size = 1;
+int dilation_size = 2;
+int erosion_size = 5;
 
 void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
@@ -26,7 +28,7 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 
 	if (event == EVENT_LBUTTONDOWN)
 	{
-		cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ") is (" << i << ", " << j << ", " << k << ")" << endl;
+		cout << "Point(" << x << ", " << y << ")" << endl;
 	}
 }
 
@@ -60,7 +62,7 @@ int main()
 	imshow("3. Saturation Channel", channel[1]); waitKey(0);
 	//create Mask form HSV cut the red out
 	Mat hsvMask;
-	inRange(image_hsv, Scalar(0, 0, 80), Scalar(255, 255, 255), hsvMask);
+	inRange(image_hsv, Scalar(0, 0, 90), Scalar(255, 255, 255), hsvMask);
 	imshow("4. RED OUT form (2)", hsvMask); waitKey(0);
 	//create Mask form HSV channel[1] <Saturation>
 	Mat vMask, mergeMask;
@@ -71,48 +73,61 @@ int main()
 	inRange(image, lowBrown, highBrown, brownMask);
 	imshow("6. Reflected Brown Mask from (1)", brownMask); waitKey(0);
 
-	vector<Point> cut_start = { Point(0,0),Point(277, 478) , Point(0, 292),  Point( brownMask.cols / 2,0),Point(478, 365),Point(328, 515),	Point(436, 438) };
+	vector<Point> cut_start = { Point(0,0),Point(277, 478) , Point(0, 292),  Point(brownMask.cols / 2,0),Point(478, 365),Point(328, 515),	Point(436, 438) };
 	vector<Point> cut_finish = { Point(419,303),Point(461, 585), Point(282, 581) ,Point(brownMask.cols, brownMask.rows),Point(575, 476),Point(676, brownMask.rows),	Point(620, 533) };
 
 	/*
- (806, 310) is (19, 27, 50)
-Left button of the mouse is clicked - position (937, 392)
+ is (75, 72, 81)
+Left button of the mouse is clicked - position (1047, 270)
 	*/
-	
+
 	cout << "COL" << brownMask.cols << "ROW" << brownMask.rows << endl;
 	for (int i = 0; i < cut_start.size(); i++) {
 		rectangle(brownMask, cut_start[i], cut_finish[i], Scalar(0), CV_FILLED);
 	}
-	
+
 	imshow("7. Cut Shadow <Black> from (6)", brownMask); waitKey(0);
-	
-	
+
+
 	//Combine two mask to a single mask
 	bitwise_and(hsvMask, vMask, mergeMask);
 	imshow("8. (4) and (5)", mergeMask); waitKey(0);
 	bitwise_or(mergeMask, brownMask, mergeMask);
 	imshow("9. (8) or (5)", mergeMask); waitKey(0);
 
-	vector<Point> white_start = { Point(0,0),Point(394, 510) , Point(111,0),Point(371, 525),Point(386, 518) ,Point(136, 355),Point(806, 310) };
-	vector<Point> white_finish = { Point(163, 43),Point(449, 544) ,Point(308,30),Point(402, 542),Point(407, 533) ,Point(0, 467) ,Point(937, 392) };
+	vector<Point> white_start = { Point(0,0)    , Point(394, 510), Point(111,0)  , Point(371, 525), Point(386, 518), Point(136, 355), Point(806, 310), Point(0,251),  Point(975, 221),  Point(911, 333), Point(1047, 232) , Point(1054, 234), Point(861,28) };
+	vector<Point> white_finish = { Point(163, 43), Point(449, 544), Point(308,30) , Point(402, 542), Point(407, 533), Point(0, 467),   Point(937, 392), Point(89,321), Point(1047, 260), Point(993, 410), Point(1056, 274), Point(1063, 237), Point(919,85) };
 	for (int i = 0; i < white_start.size(); i++) {
 		rectangle(mergeMask, white_start[i], white_finish[i], Scalar(255), CV_FILLED);
 	}
+	Mat kernel_di = getStructuringElement(MORPH_CROSS, Size(2 * dilation_size + 1, 2 * dilation_size + 1), Point(dilation_size, dilation_size));
+	Mat kernel = getStructuringElement(MORPH_CROSS, Size(2 * erosion_size + 1, 2 * erosion_size + 1), Point(erosion_size, erosion_size));
+
+
+
 	imshow("10. Cut Shadow <White> from (9)", mergeMask); waitKey(0);
-	
+
 	bitwise_xor(mergeMask, brownMask, mergeMask);
 	imshow("11. (7) xor (10)", mergeMask); waitKey(0);
 	//close mask to remove line of tiles
-	
+
+
 	Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
+
+	//imshow("12. Morph Close & Morph Open", mergeMask); waitKey(0);
 	morphologyEx(mergeMask, mergeMask, MORPH_CLOSE, element);
+	//blur(mergeMask, mergeMask, Size(1, 1));
+	imshow("12. Morph Close & Morph Open", mergeMask); waitKey(0);
 	//morphologyEx(mergeMask, mergeMask, MORPH_OPEN, element);
-    imshow("12. Morph Close & Morph Open", mergeMask); waitKey(0);
-	
-	
+	//imshow("12. Morph Close & Morph Open", mergeMask); waitKey(0);
+	//morphologyEx(mergeMask, mergeMask, MORPH_CLOSE, element);
+	erode(mergeMask, mergeMask, kernel);
+	dilate(mergeMask, mergeMask, kernel_di);
+	//morphologyEx(mergeMask, mergeMask, MORPH_OPEN, element);
+	imshow("12. Morph Close & Morph Open", mergeMask); waitKey(0);
+
+
 	Mat canny_output;
-	
-	
 
 	//canny
 	//blur(mergeMask,mask_out,Size(3,3));
@@ -125,7 +140,7 @@ Left button of the mouse is clicked - position (937, 392)
 	vector<Vec4i> hierarchy;
 
 	// find contours
-	findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+	findContours(canny_output, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 	Mat drawing = Mat::zeros(canny_output.size(), CV_8UC3);
 	RNG rng(12345);
 	//Scalar color = Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
@@ -140,7 +155,7 @@ Left button of the mouse is clicked - position (937, 392)
 	waitKey(0);
 	image.release();
 
-	
+
 
 	return 0;
 }
