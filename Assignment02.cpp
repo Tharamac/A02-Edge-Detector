@@ -127,12 +127,12 @@ Left button of the mouse is clicked - position (1047, 270)
 	imshow("12. Morph Close & Morph Open", mergeMask); waitKey(0);
 
 
-	Mat canny_output;
+	Mat canny_output=mergeMask;
 
 	//canny
 	//blur(mergeMask,mask_out,Size(3,3));
 	//imshow("6. blurred", mask_out);
-	Canny(mergeMask, canny_output, 1, 3);
+	//Canny(mergeMask, canny_output, 1, 3);
 	imshow("13. Canny edge detection", canny_output); waitKey(0);
 
 	//contour
